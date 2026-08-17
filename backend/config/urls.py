@@ -16,8 +16,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-
+from documents.views import SearchView
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("api/", include("documents.urls")),
+    path('api/search/', SearchView.as_view(), name='api_search'),
 ]

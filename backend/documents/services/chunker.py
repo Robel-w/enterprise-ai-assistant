@@ -1,3 +1,4 @@
+
 class TextChunker:
     @staticmethod
     def text_chunker(text,chunk_size = 500):
