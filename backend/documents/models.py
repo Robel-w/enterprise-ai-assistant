@@ -14,6 +14,11 @@ class DocumentChunk(models.Model):
         on_delete=models.CASCADE,
         related_name="chunks"
     )
+    chunk_index=models.IntegerField()
+    page_number =  models.IntegerField(
+        null=True,
+        blank=True
+    )
 
     content = models.TextField()
     embedding = VectorField(
