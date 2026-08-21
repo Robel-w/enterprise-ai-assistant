@@ -1,0 +1,20 @@
+[
+    {
+        "id": 1,
+        "question": "Who is Alicia Berenson?",
+        "expected_answer": "Alicia Berenson is the central character of the novel.",
+        "expected_pages": []
+    },
+    {
+        "id": 2,
+        "question": "Where does Alicia live?",
+        "expected_answer": "",
+        "expected_pages": []
+    },
+    {
+        "id": 3,
+        "question": "What happened to Alicia's husband?",
+        "expected_answer": "",
+        "expected_pages": []
+    }
+]
