@@ -28,6 +28,7 @@ class RAGService:
             "sources": [
                 {
                     "chunk_id": chunk.id,
+                    "page": chunk.page_number,
                     "content": chunk.content,
                     "distance": float(chunk.distance)
                 }

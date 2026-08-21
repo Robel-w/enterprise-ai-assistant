@@ -1,27 +1,28 @@
 from .extractor import PDFExtractor
 from .chunker import TextChunker
-from .embeddings import create_embedding
 from documents.models import DocumentChunk
+from documents.services.embeddings import create_embedding
 
 
 class DocumentProcessor:
-
     @staticmethod
     def process_document(document):
-        # 1. Extract text from PDF
-        text = PDFExtractor.extract_text(
+        pages = PDFExtractor.extract_pages(
             document.file.path
         )
+        chunk_index = 0
 
-        # 2. Split text into chunks
-        chunks = TextChunker.text_chunker(text)
-
-        # 3. Generate embedding for every chunk
-        for chunk in chunks:
-
-            embedding = create_embedding(chunk)
-            DocumentChunk.objects.create(
-                document=document,
-                content=chunk,
-                embedding=embedding
+        for page in pages:
+            chunks = TextChunker.text_chunker(
+                page["text"]
             )
+            for chunk in chunks:
+                embedding = create_embedding(chunk)
+                DocumentChunk.objects.create(
+                    document=document,
+                    chunk_index=chunk_index,
+                    page_number=page["page_number"],
+                    content=chunk,
+                    embedding=embedding
+                )
+                chunk_index += 1
