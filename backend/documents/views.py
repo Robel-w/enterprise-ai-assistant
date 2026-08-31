@@ -6,12 +6,44 @@ from rest_framework import status
 from rest_framework.response import Response 
 from .services.processor import DocumentProcessor
 from documents.services.rag import RAGService
+from rest_framework.decorators import action
+from .serializers import AskQuestionSerializer
+
 class DocumentViewSet(ModelViewSet):
     queryset = Document.objects.all()
     serializer_class = DocumentSerializer
     def perform_create(self, serializer):
         document = serializer.save()
         DocumentProcessor.process_document(document) 
+    @action(
+    detail=True,
+    methods=["post"],
+    url_path="ask"
+)
+    def ask(self, request, pk=None):
+
+        serializer = AskQuestionSerializer(
+            data=request.data
+        )
+
+        serializer.is_valid(raise_exception=True)
+
+        question = serializer.validated_data["question"]
+        top_k = serializer.validated_data["top_k"]
+
+        result = RAGService.ask(
+            question=question,
+            document_id=pk,
+            top_k=top_k
+        )
+
+        return Response(
+            result,
+            status=status.HTTP_200_OK
+        )    
+
+
+
 
 
 
