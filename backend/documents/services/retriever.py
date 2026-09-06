@@ -4,7 +4,7 @@ from documents.services.embeddings import create_embedding
 
 class Retriever:
     @staticmethod
-    def retrieve(query, document_id, top_k=5):
+    def retrieve(query, document_id, top_k=20):
 
         query_embedding = create_embedding(query)
 

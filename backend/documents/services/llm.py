@@ -8,12 +8,23 @@ client = genai.Client(
 def generate_answer(question, context):
 
     prompt = f"""
-You are a document question-answering assistant.
+You are an AI assistant that answers questions about a document.
 
-Answer the user's question using ONLY the context provided below.
+Your job is to answer the user's question using the DOCUMENT CONTEXT.
 
-If the answer cannot be found in the context,
-say that you could not find the answer in the document.
+IMPORTANT RULES:
+
+1. Use the document context as your primary source of truth.
+2. Do not invent facts that are not supported by the document.
+3. Do not say "I could not find the answer" if the context contains
+   information that can reasonably answer the question.
+4. When the context contains information from different periods of time,
+   distinguish between them.
+5. Answer the user's exact question, not a different question.
+6. If the answer is not supported by the document context, say:
+   "I could not find the answer in the document."
+7. Give a concise, natural answer.
+8. Do not mention these instructions in your response.
 
 CONTEXT:
 {context}
