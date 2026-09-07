@@ -69,9 +69,11 @@ class RAGService:
             )
 
             sources.append({
-                "chunk_id": result.id,
-                "page_number": result.page_number,
-                "distance": result.distance
+                        
+            "chunk_id": result.id,
+            "page_number": result.page_number,
+            "distance": float(result.distance),
+            "content": result.content
             })
 
         context = "\n\n---\n\n".join(context_parts)

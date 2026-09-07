@@ -4,7 +4,7 @@ from documents.services.embeddings import create_embedding
 
 class Retriever:
     @staticmethod
-    def retrieve(query, document_id, top_k=20):
+    def retrieve(query, document_id, top_k=20,max_distance=0.60):
 
         query_embedding = create_embedding(query)
 
@@ -17,8 +17,9 @@ class Retriever:
                     "embedding",
                     query_embedding
                 )
-            )
-            .order_by("distance")[:top_k]
+            ).filter(
+                distance__lte=max_distance
+            ).order_by("distance")[:top_k]
         )
 
         return results 
