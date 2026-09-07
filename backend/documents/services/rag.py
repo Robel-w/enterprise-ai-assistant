@@ -1,7 +1,7 @@
 from documents.models import Conversation, Message
 from documents.services.retriever import Retriever
 from documents.services.llm import generate_answer
-
+from documents.services.reranker import Reranker
 
 class RAGService:
 
@@ -31,13 +31,19 @@ class RAGService:
 
         # 3. Retrieve relevant document chunks
 
-        results = Retriever.retrieve(
+        retrieved_results = Retriever.retrieve(
             question,
             document_id=document_id,
-            top_k=top_k
+            top_k=20
         )
 
-        if not results:
+        reranked_results = Reranker.rerank(
+            question,
+            retrieved_results,
+            top_k=5
+        )
+
+        if not retrieved_results:
 
             answer = (
                 "I could not find relevant information "
@@ -62,7 +68,8 @@ class RAGService:
 
         sources = []
 
-        for result in results:
+        for item in reranked_results:
+            result = item["result"]
 
             context_parts.append(
                 result.content
@@ -73,6 +80,7 @@ class RAGService:
             "chunk_id": result.id,
             "page_number": result.page_number,
             "distance": float(result.distance),
+            "reranker_score": item["score"],
             "content": result.content
             })
 
