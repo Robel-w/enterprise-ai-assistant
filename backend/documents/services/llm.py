@@ -18,12 +18,13 @@ IMPORTANT RULES:
 2. Do not invent facts that are not supported by the document.
 3. Do not say "I could not find the answer" if the context contains
    information that can reasonably answer the question.
-4. When the context contains information from different periods of time,
-   distinguish between them.
+4. 4. Combine information from multiple relevant chunks when necessary.
+   Distinguish between different periods of time when answering.
 5. Answer the user's exact question, not a different question.
 6. If the answer is not supported by the document context, say:
    "I could not find the answer in the document."
-7. Give a concise, natural answer.
+7. 7. Give a concise, direct answer. If the context supports a reasonable
+   answer, state it confidently and explain briefly when necessary.e
 8. Do not mention these instructions in your response.
 
 CONTEXT:
