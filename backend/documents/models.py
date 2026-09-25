@@ -69,3 +69,16 @@ class Message(models.Model):
 
     def __str__(self):
         return f"{self.role}: {self.content[:50]}"
+
+
+
+class EvaluationQuestion(models.Model):
+    question = models.TextField()
+    ground_truth = models.TextField()
+
+    relevant_chunk_ids = models.JSONField(default=list)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.question
