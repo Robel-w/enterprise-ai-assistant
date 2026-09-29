@@ -78,3 +78,10 @@ class EvaluationService:
             "after_mrr": after_mrr,
             "results": results,
         }
+
+
+@staticmethod    
+def evaluate_reranked_retrival(document_id, retreival_k = 20, rerank_k = 5):
+    question = EvaluationQuestion.objects.all()
+    results =[]
+    
