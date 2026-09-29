@@ -80,8 +80,55 @@ class EvaluationService:
         }
 
 
-@staticmethod    
-def evaluate_reranked_retrival(document_id, retreival_k = 20, rerank_k = 5):
-    question = EvaluationQuestion.objects.all()
-    results =[]
-    
+@staticmethod
+def evaluate_reranked_retrieval(
+    document_id,
+    retrieval_k=20,
+    rerank_k=5
+):
+
+    questions = EvaluationQuestion.objects.all()
+
+    results = []
+
+    for question in questions:
+
+        retrieved = Retriever.retrieve(
+            question.question,
+            document_id=document_id,
+            top_k=retrieval_k
+        )
+
+        reranked = Reranker.rerank(
+            question.question,
+            retrieved,
+            top_k=rerank_k
+        )
+
+        relevant_ids = set(
+            question.relevant_chunk_ids
+        )
+
+        hit = any(
+            item["result"].id in relevant_ids
+            for item in reranked
+        )
+
+        results.append({
+            "question": question.question,
+            "hit": hit,
+        })
+
+    total = len(results)
+
+    recall_at_k = (
+        sum(r["hit"] for r in results) / total
+        if total
+        else 0
+    )
+
+    return {
+        "total_questions": total,
+        "recall_at_k": recall_at_k,
+        "results": results,
+    }
