@@ -27,10 +27,19 @@ class DocumentChunk(models.Model):
     )
 
 class Conversation(models.Model):
+    # Single-doc convenience FK (nullable for multi-doc conversations)
     document = models.ForeignKey(
         Document,
         on_delete=models.CASCADE,
-        related_name="conversations"
+        related_name="conversations",
+        null=True,
+        blank=True,
+    )
+    # Multi-doc support: track all documents involved in this conversation
+    documents = models.ManyToManyField(
+        Document,
+        related_name="multi_conversations",
+        blank=True,
     )
     title = models.CharField(
         max_length=255,
@@ -82,3 +91,36 @@ class EvaluationQuestion(models.Model):
 
     def __str__(self):
         return self.question
+
+
+
+class AnswerEvaluationResult(models.Model):
+    evaluation_question = models.ForeignKey(
+        EvaluationQuestion,
+        on_delete=models.CASCADE
+    )
+
+    generated_answer = models.TextField()
+
+    context = models.TextField()
+
+    correctness = models.FloatField(
+        null=True,
+        blank=True
+    )
+
+    faithfulness = models.FloatField(
+        null=True,
+        blank=True
+    )
+
+    explanation = models.TextField(
+        blank=True
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    def __str__(self):
+        return self.evaluation_question.question
