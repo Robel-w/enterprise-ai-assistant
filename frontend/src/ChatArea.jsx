@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import Message from './Message';
+import PromptBar from './PromptBar';
 import { askDocument, streamAskDocument, askMultiDocument, agentAsk } from './api';
 
 const SUGGESTIONS = [
@@ -18,7 +19,6 @@ export default function ChatArea({ selectedIds, mode, addToast }) {
   const [loading, setLoading] = useState(false);
   const [conversationId, setConversationId] = useState(null);
   const bottomRef = useRef(null);
-  const textareaRef = useRef(null);
 
   // Reset conversation when document selection changes
   useEffect(() => {
@@ -175,13 +175,6 @@ export default function ChatArea({ selectedIds, mode, addToast }) {
     }
   }, [input, selectedIds, mode, conversationId, addToast]);
 
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
-  };
-
   const isEmpty = messages.length === 0;
 
   return (
@@ -224,44 +217,39 @@ export default function ChatArea({ selectedIds, mode, addToast }) {
             </button>
           </div>
         )}
-        <div className="input-row">
-          <div className="input-wrapper">
-            <textarea
-              ref={textareaRef}
-              id="chat-input"
-              className="chat-input"
-              placeholder={
-                selectedIds.length === 0
-                  ? 'Select a document to start chatting…'
-                  : mode === 'agent'
-                  ? 'Ask the AI agent anything…'
-                  : mode === 'stream'
-                  ? 'Ask for a streamed answer…'
-                  : selectedIds.length > 1
-                  ? `Ask across ${selectedIds.length} documents…`
-                  : 'Ask about this document…'
-              }
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              disabled={loading}
-              rows={1}
-              style={{ height: 'auto' }}
-              onInput={(e) => {
-                e.target.style.height = 'auto';
-                e.target.style.height = Math.min(e.target.scrollHeight, 160) + 'px';
-              }}
-            />
-            <button
-              className="send-btn"
-              onClick={() => sendMessage()}
-              disabled={loading || !input.trim() || selectedIds.length === 0}
-              aria-label="Send message"
-            >
-              {loading ? '⏳' : '↑'}
-            </button>
-          </div>
-        </div>
+        <PromptBar
+          placeholder={
+            selectedIds.length === 0
+              ? 'Select a document to start chatting…'
+              : mode === 'agent'
+              ? 'Ask the AI agent anything…'
+              : mode === 'stream'
+              ? 'Ask for a streamed answer…'
+              : selectedIds.length > 1
+              ? `Ask across ${selectedIds.length} documents…`
+              : 'Ask about this document…'
+          }
+          busy={loading}
+          onSend={(text) => sendMessage(text)}
+          onStop={() => undefined}
+          onAttach={() => {
+            const picker = document.createElement('input');
+            picker.type = 'file';
+            picker.multiple = true;
+            picker.accept = '.pdf,.txt,.doc,.docx';
+            return new Promise((resolve) => {
+              picker.onchange = () => resolve(Array.from(picker.files ?? []).map((file) => file.name));
+              picker.click();
+            });
+          }}
+          models={[]}
+          efforts={[]}
+          background="var(--color-surface-elevated)"
+          color="var(--color-text)"
+          menuBackground="var(--color-surface)"
+          width={760}
+          radius={14}
+        />
       </div>
     </div>
   );
