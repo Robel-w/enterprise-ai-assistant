@@ -1,7 +1,24 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import Message from './Message';
 import PromptBar from './PromptBar';
+import { Attachment01Icon, Globe02Icon } from '@hugeicons/core-free-icons';
 import { askDocument, streamAskDocument, askMultiDocument, agentAsk } from './api';
+
+const PROMPT_SOURCES = [
+  {
+    key: 'files',
+    name: 'Photos & files',
+    description: 'Attach context to your question',
+    icon: Attachment01Icon,
+    attach: true,
+  },
+  {
+    key: 'web',
+    name: 'Web search',
+    description: 'Search live sources',
+    icon: Globe02Icon,
+  },
+];
 
 const SUGGESTIONS = [
   'Summarize this document',
@@ -230,6 +247,8 @@ export default function ChatArea({ selectedIds, mode, addToast }) {
               : 'Ask about this document…'
           }
           busy={loading}
+          sources={PROMPT_SOURCES}
+          commands={[]}
           onSend={(text) => sendMessage(text)}
           onStop={() => undefined}
           onAttach={() => {
