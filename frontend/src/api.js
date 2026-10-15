@@ -1,5 +1,5 @@
 // API base URL — proxied through Vite dev server
-const BASE = 'http://localhost:8000/api';
+const BASE = '/api';
 
 export async function fetchDocuments() {
   const res = await fetch(`${BASE}/documents/`);
