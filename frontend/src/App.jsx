@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import './index.css';
 import Sidebar from './Sidebar';
 import ChatArea from './ChatArea';
+import PixelBlast from './PixelBlast';
 import { fetchDocuments } from './api';
 import { useToast } from './useToast';
 
@@ -34,6 +35,7 @@ export default function App() {
 
   return (
     <div className="app-shell">
+      <PixelBlast />
       {/* Topbar */}
       <header className="topbar">
         <div className="topbar-logo">

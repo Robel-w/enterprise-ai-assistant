@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
 /* ============================================================
    ENTERPRISE AI ASSISTANT — GLOBAL DESIGN SYSTEM
    Dark glassmorphism theme with neon-blue & violet accents
@@ -27,8 +29,9 @@
   --color-text-faint:  #4d5f7c;
 
   /* Typography */
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-mono: 'Fira Code', 'Cascadia Code', monospace;
+  --font-sans: 'DM Sans', system-ui, -apple-system, sans-serif;
+  --font-display: 'Space Grotesk', 'DM Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'Fira Code', 'Cascadia Code', monospace;
 
   /* Spacing */
   --radius-sm: 6px;
@@ -55,6 +58,7 @@ body {
   background: var(--color-bg);
   color: var(--color-text);
   line-height: 1.6;
+  font-feature-settings: 'ss01' 1, 'cv11' 1;
   min-height: 100vh;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
@@ -78,8 +82,9 @@ body::before {
 ::-webkit-scrollbar-thumb { background: var(--color-border-glow); border-radius: 3px; }
 
 /* ---- Typography ---- */
-h1 { font-size: 2rem; font-weight: 800; letter-spacing: -0.03em; }
-h2 { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.02em; }
+h1, h2, h3, .topbar-logo-name, .empty-title { font-family: var(--font-display); }
+h1 { font-size: 2rem; font-weight: 700; letter-spacing: -0.04em; }
+h2 { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.03em; }
 h3 { font-size: 1.1rem; font-weight: 600; }
 p  { color: var(--color-text-muted); }
 
@@ -91,6 +96,11 @@ p  { color: var(--color-text-muted); }
   height: 100vh;
   position: relative;
   z-index: 1;
+}
+
+.app-shell > .pixel-blast {
+  position: fixed;
+  z-index: -1;
 }
 
 /* ---- Topbar ---- */

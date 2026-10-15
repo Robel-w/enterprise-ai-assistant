@@ -1,0 +1,18 @@
+.pixel-blast {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.82;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pixel-blast { opacity: 0.42; }
+}
+
+@media (max-width: 720px) {
+  .pixel-blast { opacity: 0.5; }
+}
