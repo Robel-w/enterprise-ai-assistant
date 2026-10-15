@@ -249,6 +249,8 @@ export default function ChatArea({ selectedIds, mode, addToast }) {
           busy={loading}
           sources={PROMPT_SOURCES}
           commands={[]}
+          models={[]}
+          efforts={[]}
           onSend={(text) => sendMessage(text)}
           onStop={() => undefined}
           onAttach={() => {
