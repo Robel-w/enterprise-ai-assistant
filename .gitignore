@@ -1,6 +1,7 @@
 backend/venv
 backend/venv_store/
 .env
+.env.example
 **/.env
 **/__pycache__/
 *.py[cod]
