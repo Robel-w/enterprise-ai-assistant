@@ -3,10 +3,9 @@ import Message from './Message';
 import { askDocument, streamAskDocument, askMultiDocument, agentAsk } from './api';
 
 const SUGGESTIONS = [
-  'Summarize this document',
-  'What are the main themes?',
-  'Who are the key characters?',
-  'What happens at the end?',
+  'Give me the short version',
+  'What should I pay attention to?',
+  'Find the key evidence',
 ];
 
 let msgId = 0;
@@ -19,12 +18,6 @@ export default function ChatArea({ selectedIds, mode, addToast }) {
   const [conversationId, setConversationId] = useState(null);
   const bottomRef = useRef(null);
   const textareaRef = useRef(null);
-
-  // Reset conversation when document selection changes
-  useEffect(() => {
-    setMessages([]);
-    setConversationId(null);
-  }, [selectedIds.join(','), mode]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -189,19 +182,21 @@ export default function ChatArea({ selectedIds, mode, addToast }) {
       <div className="messages-area">
         {isEmpty && (
           <div className="empty-state">
-            <div className="empty-icon">💬</div>
-            <h2 className="empty-title">Ask anything about your documents</h2>
-            <p className="empty-desc">
-              Select one or more documents from the sidebar, choose a mode, and start chatting.
-              Citations will appear inline as <span className="citation-badge">📄 p.12</span> badges.
-            </p>
-            <div className="suggestion-chips">
-              {SUGGESTIONS.map((s) => (
-                <button key={s} className="chip" onClick={() => sendMessage(s)}>
-                  {s}
-                </button>
-              ))}
+            <div className="empty-kicker">A quieter way to work with information</div>
+            <div className="empty-content">
+              <h2 className="empty-title">Let the documents<br />do the talking.</h2>
+              <p className="empty-desc">
+                Select a file, then ask a question. Answers stay grounded in the source, with page references close at hand.
+              </p>
+              <div className="suggestion-chips">
+                {SUGGESTIONS.map((s) => (
+                  <button key={s} className="chip" onClick={() => sendMessage(s)}>
+                    {s}
+                  </button>
+                ))}
+              </div>
             </div>
+            <div className="empty-index" aria-hidden="true">01<br />—<br />04</div>
           </div>
         )}
 

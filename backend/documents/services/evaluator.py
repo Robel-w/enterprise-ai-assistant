@@ -1,6 +1,9 @@
 from documents.services.retriever import Retriever
 from documents.services.reranker import Reranker
-from documents.models import EvaluationQuestion
+from documents.models import (
+    EvaluationQuestion,
+    AnswerEvaluationResult
+)
 from pydantic import BaseModel
 from documents.services.rag import RAGService
 from documents.services.llm import client
@@ -13,6 +16,121 @@ class AnswerEvaluation(BaseModel):
 
 
 class EvaluationService:
+
+
+
+
+    @staticmethod
+    def generate_evaluation_answers(document_id, top_k=5):
+
+        questions = EvaluationQuestion.objects.all()
+
+        results = []
+
+        for question in questions:
+
+            rag_result = RAGService.ask(
+                question=question.question,
+                document_id=document_id,
+                top_k=top_k
+            )
+
+            answer = rag_result["answer"]
+
+            context = "\n\n".join(
+                source["content"]
+                for source in rag_result["sources"]
+            )
+
+            saved_result = AnswerEvaluationResult.objects.create(
+                evaluation_question=question,
+                generated_answer=answer,
+                context=context
+            )
+
+            results.append({
+                "id": saved_result.id,
+                "question": question.question,
+                "generated_answer": answer,
+            })
+
+        return {
+            "total_questions": len(results),
+            "results": results,
+        }
+
+    @staticmethod
+    def evaluate_saved_answers():
+        results = []
+        for saved in AnswerEvaluationResult.objects.select_related("evaluation_question"):
+            prompt = f"""
+    You are evaluating an answer produced by a document question-answering system.
+
+    Evaluate the generated answer using the ground-truth answer and
+    the document context.
+
+    QUESTION:
+    {saved.evaluation_question.question}
+
+    GROUND TRUTH:
+    {saved.evaluation_question.ground_truth}
+
+    GENERATED ANSWER:
+    {saved.generated_answer}
+
+    DOCUMENT CONTEXT:
+    {saved.context}
+
+    Evaluate:
+
+    1. correctness:
+    How accurately does the generated answer answer the question
+    compared with the ground truth?
+
+    2. faithfulness:
+    Is the generated answer supported by the DOCUMENT CONTEXT?
+
+    Important:
+    - Do not use the ground truth to judge faithfulness.
+    - Judge faithfulness only against the DOCUMENT CONTEXT.
+    - Do not reward unsupported or invented information.
+
+    Use a score from 0.0 to 1.0.
+
+    Return:
+    - correctness
+    - faithfulness
+    - explanation
+    """
+
+            response = client.models.generate_content(
+                model="gemini-3.6-flash",
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    response_schema=AnswerEvaluation,
+                ),
+            )
+            evaluation = response.parsed
+            if evaluation is None:
+                raise ValueError("The evaluation model returned no structured result.")
+
+            saved.correctness = evaluation.correctness
+            saved.faithfulness = evaluation.faithfulness
+            saved.explanation = evaluation.explanation
+            saved.save(update_fields=["correctness", "faithfulness", "explanation"])
+
+            results.append({
+                "id": saved.id,
+                "question": saved.evaluation_question.question,
+                "generated_answer": saved.generated_answer,
+                "correctness": evaluation.correctness,
+                "faithfulness": evaluation.faithfulness,
+                "explanation": evaluation.explanation,
+            })
+
+        return {"total_questions": len(results), "results": results}
+
 
     @staticmethod
     def evaluate_answers(document_id, top_k=5):
@@ -31,9 +149,9 @@ class EvaluationService:
 
             answer = rag_result["answer"]
             context = "\n\n".join(
-    source["content"]
-    for source in rag_result["sources"]
-)
+                source["content"]
+                for source in rag_result["sources"]
+            )
 
             prompt = f"""
 You are evaluating an answer produced by a document question-answering
@@ -75,28 +193,28 @@ Return:
 """
 
             # Gemini evaluation will go here
-        response = client.models.generate_content(
-            model="gemini-3.6-flash",
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json",
-                response_schema=AnswerEvaluation,
-            ),
-        )
+            response = client.models.generate_content(
+                model="gemini-3.6-flash",
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    response_schema=AnswerEvaluation,
+                ),
+            )
 
-        evaluation = response.parsed
-        results.append({
-    "question": question.question,
-    "ground_truth": question.ground_truth,
-    "generated_answer": answer,
-    "correctness": evaluation.correctness,
-    "faithfulness": evaluation.faithfulness,
-    "explanation": evaluation.explanation,
-})
+            evaluation = response.parsed
+            results.append({
+                "question": question.question,
+                "ground_truth": question.ground_truth,
+                "generated_answer": answer,
+                "correctness": evaluation.correctness,
+                "faithfulness": evaluation.faithfulness,
+                "explanation": evaluation.explanation,
+            })
         return {
-    "total_questions": len(results),
-    "results": results,
-}    
+            "total_questions": len(results),
+            "results": results,
+        }
 
 
     @staticmethod

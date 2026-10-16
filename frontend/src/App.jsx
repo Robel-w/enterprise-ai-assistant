@@ -2,27 +2,37 @@ import { useState, useEffect } from 'react';
 import './index.css';
 import Sidebar from './Sidebar';
 import ChatArea from './ChatArea';
-import { fetchDocuments } from './api';
+import { checkBackendHealth, fetchDocuments } from './api';
 import { useToast } from './useToast';
 
 const MODES = [
-  { id: 'rag',    label: '📚 RAG',       activeClass: 'active-rag',    desc: 'Retrieval-augmented generation with citations' },
-  { id: 'stream', label: '⚡ Stream',    activeClass: 'active-stream', desc: 'Streamed token-by-token answers' },
-  { id: 'multi',  label: '🗂 Multi-Doc', activeClass: 'active-rag',    desc: 'Search across multiple documents' },
-  { id: 'agent',  label: '🧠 Agent',     activeClass: 'active-agent',  desc: 'Autonomous agentic reasoning with tools' },
+  { id: 'rag',    label: 'Research',     activeClass: 'active-rag',    desc: 'Retrieval-augmented generation with citations' },
+  { id: 'stream', label: 'Live answer',  activeClass: 'active-stream', desc: 'Streamed token-by-token answers' },
+  { id: 'multi',  label: 'Across files', activeClass: 'active-rag',    desc: 'Search across multiple documents' },
+  { id: 'agent',  label: 'Agent',        activeClass: 'active-agent',  desc: 'Autonomous agentic reasoning with tools' },
 ];
 
 export default function App() {
   const [documents, setDocuments] = useState([]);
   const [selectedIds, setSelectedIds] = useState([]);
   const [mode, setMode] = useState('rag');
+  const [backendStatus, setBackendStatus] = useState('checking');
   const { toasts, addToast } = useToast();
 
   useEffect(() => {
-    fetchDocuments()
+    const controller = new AbortController();
+    fetchDocuments({ signal: controller.signal })
       .then(setDocuments)
-      .catch(() => addToast('Failed to load documents', 'error'));
-  }, []);
+      .catch((error) => {
+        if (!controller.signal.aborted) addToast(error.message, 'error');
+      });
+    checkBackendHealth({ signal: controller.signal })
+      .then(() => setBackendStatus('connected'))
+      .catch(() => {
+        if (!controller.signal.aborted) setBackendStatus('disconnected');
+      });
+    return () => controller.abort();
+  }, [addToast]);
 
   const handleUpload = (doc) => {
     setDocuments((prev) => [doc, ...prev]);
@@ -31,24 +41,30 @@ export default function App() {
   };
 
   const selectedMode = MODES.find((m) => m.id === mode);
+  const conversationKey = `${selectedIds.join(',')}:${mode}`;
 
   return (
     <div className="app-shell">
       {/* Topbar */}
       <header className="topbar">
         <div className="topbar-logo">
-          <div className="topbar-logo-icon">✦</div>
-          <div className="topbar-logo-name">Enterprise AI Assistant</div>
+          <div className="topbar-logo-icon" aria-hidden="true">A</div>
+          <div className="topbar-logo-name">Archive <span>/ Research desk</span></div>
         </div>
         <div className="topbar-spacer" />
         <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginRight: 12 }}>
-          {selectedIds.length === 0
+          <span className="selection-summary">{selectedIds.length === 0
             ? 'No document selected'
             : selectedIds.length === 1
             ? `1 document · ${selectedMode?.desc}`
-            : `${selectedIds.length} documents · Multi-doc mode`}
+            : `${selectedIds.length} documents · Multi-doc mode`}</span>
         </div>
-        <div className="status-dot" title="Backend connected" />
+        <div
+          className={`status-dot ${backendStatus}`}
+          title={`Backend ${backendStatus}`}
+          role="status"
+          aria-label={`Backend ${backendStatus}`}
+        />
       </header>
 
       {/* Sidebar */}
@@ -79,6 +95,7 @@ export default function App() {
 
         {/* Chat */}
         <ChatArea
+          key={conversationKey}
           selectedIds={selectedIds}
           mode={mode}
           addToast={addToast}

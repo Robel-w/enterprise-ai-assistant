@@ -133,10 +133,7 @@ class RAGService:
             "citations": citations,
         }
 
-    # ------------------------------------------------------------------ #
-    #  Streaming single-document ask                                       #
-    # ------------------------------------------------------------------ #
-
+    #  Streaming single-document ask                                       
     @staticmethod
     def ask_stream(question, document_id, conversation_id=None, top_k=5):
         """
@@ -202,9 +199,7 @@ class RAGService:
         # Send final metadata frame
         yield f"data: {json.dumps({'done': True, 'citations': citations, 'sources': sources, 'conversation_id': conversation.id})}\n\n"
 
-    # ------------------------------------------------------------------ #
-    #  Multi-document ask                                                  #
-    # ------------------------------------------------------------------ #
+    #  Multi-document ask                                                  
 
     @staticmethod
     def ask_multi(question, document_ids, conversation_id=None, top_k_per_doc=10, top_k_final=5):

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import LatticeLoader from './LatticeLoader';
 
 /**
  * Renders assistant message text with [Page X] citations converted to
@@ -13,7 +14,7 @@ function CitedText({ text }) {
         if (match) {
           return (
             <span key={i} className="citation-badge" title={`Jump to page ${match[1]}`}>
-              📄 p.{match[1]}
+              p. {match[1]}
             </span>
           );
         }
@@ -65,7 +66,7 @@ export default function Message({ msg }) {
   if (msg.role === 'user') {
     return (
       <div className="message user">
-        <div className="msg-avatar">👤</div>
+        <div className="msg-avatar" aria-label="You">Y</div>
         <div className="msg-body">
           <div className="msg-bubble">{msg.content}</div>
         </div>
@@ -73,18 +74,35 @@ export default function Message({ msg }) {
     );
   }
 
-  // Typing indicator
+  // Typing indicator — replaced with LatticeLoader
   if (msg.typing) {
+    const modeLabel =
+      msg.mode === 'agent' ? 'Agent thinking' :
+      msg.mode === 'multi' ? 'Cross-referencing' :
+      'Retrieving';
+    const loaderColor =
+      msg.mode === 'agent' ? '#626957' :
+      msg.mode === 'stream' ? '#596b48' :
+      '#a23c2b';
     return (
       <div className="message assistant">
-        <div className="msg-avatar">🤖</div>
+        <div className="msg-avatar" aria-label="Assistant">A</div>
         <div className="msg-body">
-          <div className="msg-bubble" style={{ padding: '8px 16px' }}>
-            <div className="typing-indicator">
-              <div className="typing-dot" />
-              <div className="typing-dot" />
-              <div className="typing-dot" />
-            </div>
+          <div className="msg-bubble" style={{ padding: '12px 16px' }}>
+            <LatticeLoader
+              status="working"
+              label={modeLabel}
+              pattern="orbit"
+              grid={3}
+              shape="round"
+              color={loaderColor}
+              cellSize={7}
+              gap={2.5}
+              fontSize={13}
+              step={90}
+              idleOpacity={0.18}
+              showTimer
+            />
           </div>
         </div>
       </div>
@@ -95,12 +113,12 @@ export default function Message({ msg }) {
   const hasSources = msg.sources?.length > 0;
   const hasAgentSteps = msg.agent_steps?.length > 0;
   const isStreaming = msg.streaming;
-  const modeLabel = msg.mode === 'agent' ? '🧠 Agent' : msg.mode === 'stream' ? '⚡ Stream' : msg.mode === 'multi' ? '🗂 Multi-Doc' : '📚 RAG';
+  const modeLabel = msg.mode === 'agent' ? 'Agent' : msg.mode === 'stream' ? 'Live answer' : msg.mode === 'multi' ? 'Across files' : 'Research';
   const modeBadgeClass = msg.mode === 'agent' ? 'badge-violet' : msg.mode === 'stream' ? 'badge-green' : 'badge-blue';
 
   return (
     <div className="message assistant">
-      <div className="msg-avatar">🤖</div>
+      <div className="msg-avatar" aria-label="Assistant">A</div>
       <div className="msg-body" style={{ maxWidth: '80%' }}>
 
         {/* Mode badge */}
@@ -121,7 +139,7 @@ export default function Message({ msg }) {
           <div className="citations-row">
             <span className="citations-label">Sources:</span>
             {msg.citations.map((page) => (
-              <span key={page} className="citation-badge">📄 p.{page}</span>
+              <span key={page} className="citation-badge">p. {page}</span>
             ))}
           </div>
         )}

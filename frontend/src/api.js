@@ -1,9 +1,22 @@
-// API base URL — proxied through Vite dev server
-const BASE = 'http://localhost:8000/api';
+// Use the same origin in development and production. Vite and nginx proxy API
+// requests to Django, which also works when the frontend runs in a container.
+const BASE = `${import.meta.env.VITE_API_BASE_URL ?? ''}/api`;
 
-export async function fetchDocuments() {
-  const res = await fetch(`${BASE}/documents/`);
-  if (!res.ok) throw new Error('Failed to load documents');
+async function responseError(response, fallback) {
+  const body = await response.json().catch(() => null);
+  const detail = body?.detail ?? body?.error ?? body?.message;
+  return new Error(typeof detail === 'string' ? detail : `${fallback} (${response.status})`);
+}
+
+export async function fetchDocuments(options = {}) {
+  const res = await fetch(`${BASE}/documents/`, options);
+  if (!res.ok) throw await responseError(res, 'Failed to load documents');
+  return res.json();
+}
+
+export async function checkBackendHealth(options = {}) {
+  const res = await fetch(`${BASE}/health/`, options);
+  if (!res.ok) throw await responseError(res, 'Backend unavailable');
   return res.json();
 }
 
@@ -11,8 +24,9 @@ export async function uploadDocument(file, onProgress) {
   const form = new FormData();
   form.append('file', file);
   form.append('title', file.name.replace(/\.[^/.]+$/, ''));
-  // owner=1 for dev; replace with auth token logic later
-  form.append('owner', 1);
+  // The existing single-user UI has no sign-in flow; retain its configurable
+  // document owner until authentication is implemented.
+  form.append('owner', import.meta.env.VITE_DEFAULT_OWNER_ID ?? '1');
 
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
@@ -24,7 +38,12 @@ export async function uploadDocument(file, onProgress) {
       if (xhr.status >= 200 && xhr.status < 300) {
         resolve(JSON.parse(xhr.responseText));
       } else {
-        reject(new Error(`Upload failed: ${xhr.status}`));
+        let message = `Upload failed (${xhr.status})`;
+        try {
+          const body = JSON.parse(xhr.responseText);
+          message = Object.values(body).flat().find((value) => typeof value === 'string') ?? message;
+        } catch { /* Keep the status-based message for non-JSON responses. */ }
+        reject(new Error(message));
       }
     };
     xhr.onerror = () => reject(new Error('Network error'));
@@ -38,7 +57,7 @@ export async function askDocument({ documentId, question, conversationId, topK =
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ question, conversation_id: conversationId, top_k: topK }),
   });
-  if (!res.ok) throw new Error('Ask failed');
+  if (!res.ok) throw await responseError(res, 'Ask failed');
   return res.json();
 }
 
@@ -53,7 +72,7 @@ export async function* streamAskDocument({ documentId, question, conversationId,
     body: JSON.stringify({ question, conversation_id: conversationId, top_k: topK }),
   });
 
-  if (!res.ok) throw new Error('Stream ask failed');
+  if (!res.ok) throw await responseError(res, 'Stream ask failed');
 
   const reader = res.body.getReader();
   const decoder = new TextDecoder();
@@ -91,7 +110,7 @@ export async function askMultiDocument({ documentIds, question, conversationId, 
       top_k_final: topKFinal,
     }),
   });
-  if (!res.ok) throw new Error('Multi-doc ask failed');
+  if (!res.ok) throw await responseError(res, 'Multi-doc ask failed');
   return res.json();
 }
 
@@ -101,6 +120,6 @@ export async function agentAsk({ documentIds, question, conversationId }) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ question, document_ids: documentIds, conversation_id: conversationId }),
   });
-  if (!res.ok) throw new Error('Agent ask failed');
+  if (!res.ok) throw await responseError(res, 'Agent ask failed');
   return res.json();
 }
