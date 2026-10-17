@@ -469,6 +469,12 @@ Contributions and suggestions are welcome. Potential areas include improving ret
 3. Implement and test your changes.
 4. Submit a pull request describing the change.
 
+## The reranker improved MRR by about 3.22×.
+MRR before vs after reranking
+Cross-encoder reranking substantially improves the position of relevant chunks in the top-5 results.
+<img width="960" height="540" alt="MRR before vs after reranking (1)" src="https://github.com/user-attachments/assets/d32b8b6f-a455-4b4b-b380-7829c22145b3" />
+
+
 ## License
 
 Choose a license before publishing the repository. If you have not selected one yet, this project currently has no explicitly stated open-source license.
