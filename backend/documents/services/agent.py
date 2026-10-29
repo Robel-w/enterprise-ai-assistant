@@ -103,7 +103,7 @@ Use the tools to reason step-by-step before giving a final answer.
 class AgentService:
 
     @staticmethod
-    def run(question: str, document_ids: list, conversation_id: int = None):
+    def run(question: str, document_ids: list, conversation_id: int = None, owner=None):
         """
         Run the ReAct agentic loop and return a structured response.
         Returns:
@@ -125,6 +125,8 @@ class AgentService:
 
         from documents.models import Document
         docs = Document.objects.filter(id__in=document_ids)
+        if owner is not None:
+            docs = docs.filter(owner=owner)
         conversation.documents.set(docs)
 
         # Save user message
@@ -188,7 +190,7 @@ class AgentService:
             for fc in function_calls:
                 args = dict(fc.args) if fc.args else {}
                 observation = AgentService._execute_tool(
-                    fc.name, args, document_ids
+                    fc.name, args, document_ids, owner=owner
                 )
 
                 agent_steps.append({
@@ -234,16 +236,17 @@ class AgentService:
         }
 
     @staticmethod
-    def _execute_tool(name: str, args: dict, document_ids: list) -> str:
+    def _execute_tool(name: str, args: dict, document_ids: list, owner=None) -> str:
         """Dispatch a function call name to the appropriate tool implementation."""
         if name == "search_document":
             return tool_search_document(
                 question=args.get("query", ""),
                 document_ids=document_ids,
                 top_k=int(args.get("top_k", 5)),
+                owner=owner,
             )
         elif name == "summarize_document":
-            return tool_summarize_document(document_ids=document_ids)
+            return tool_summarize_document(document_ids=document_ids, owner=owner)
         elif name == "answer_directly":
             return args.get("answer", "")
         else:

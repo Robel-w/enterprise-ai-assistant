@@ -8,15 +8,19 @@ from documents.services.reranker import Reranker
 from documents.services.llm import generate_answer
 
 
-def tool_search_document(question: str, document_ids: list, top_k: int = 5) -> str:
+def tool_search_document(question: str, document_ids: list, top_k: int = 5, owner=None) -> str:
     """
     Retrieve and rerank relevant chunks from one or more documents,
     then format them as a plain-text observation for the agent.
     """
     if len(document_ids) == 1:
-        chunks = Retriever.retrieve(question, document_id=document_ids[0], top_k=20)
+        chunks = Retriever.retrieve(
+            question, document_id=document_ids[0], top_k=20, owner=owner
+        )
     else:
-        chunks = Retriever.retrieve_multi(question, document_ids=document_ids, top_k_per_doc=10)
+        chunks = Retriever.retrieve_multi(
+            question, document_ids=document_ids, top_k_per_doc=10, owner=owner
+        )
 
     if not chunks:
         return "No relevant content found in the document(s)."
@@ -36,7 +40,7 @@ def tool_search_document(question: str, document_ids: list, top_k: int = 5) -> s
     return "\n\n---\n\n".join(parts)
 
 
-def tool_summarize_document(document_ids: list) -> str:
+def tool_summarize_document(document_ids: list, owner=None) -> str:
     """
     Produce a brief summary of the document(s) by retrieving
     a broad sample of chunks and asking the LLM to summarize.
@@ -46,9 +50,11 @@ def tool_summarize_document(document_ids: list) -> str:
     summaries = []
     for doc_id in document_ids:
         # Grab the first 10 chunks (beginning of document = best summary signal)
+        queryset = DocumentChunk.objects.filter(document_id=doc_id)
+        if owner is not None:
+            queryset = queryset.filter(document__owner=owner)
         chunks = (
-            DocumentChunk.objects
-            .filter(document_id=doc_id)
+            queryset
             .exclude(embedding=None)
             .order_by("chunk_index")[:10]
         )

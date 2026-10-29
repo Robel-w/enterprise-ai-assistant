@@ -74,7 +74,7 @@ class RAGService:
     # ------------------------------------------------------------------ #
 
     @staticmethod
-    def ask(question, document_id, conversation_id=None, top_k=5):
+    def ask(question, document_id, conversation_id=None, top_k=5, owner=None):
 
         conversation = _get_or_create_conversation(
             conversation_id,
@@ -90,7 +90,7 @@ class RAGService:
         )
 
         # Retrieve & rerank
-        retrieved = Retriever.retrieve(question, document_id=document_id, top_k=20)
+        retrieved = Retriever.retrieve(question, document_id=document_id, top_k=20, owner=owner)
         if not retrieved:
             answer = "I could not find relevant information in the document."
             Message.objects.create(
@@ -135,7 +135,7 @@ class RAGService:
 
     #  Streaming single-document ask                                       
     @staticmethod
-    def ask_stream(question, document_id, conversation_id=None, top_k=5):
+    def ask_stream(question, document_id, conversation_id=None, top_k=5, owner=None):
         """
         Generator that yields SSE-formatted strings.
         Saves the complete answer + sources to the DB when the stream ends.
@@ -159,7 +159,7 @@ class RAGService:
         )
 
         # Retrieve & rerank
-        retrieved = Retriever.retrieve(question, document_id=document_id, top_k=20)
+        retrieved = Retriever.retrieve(question, document_id=document_id, top_k=20, owner=owner)
         if not retrieved:
             fallback = "I could not find relevant information in the document."
             Message.objects.create(
@@ -202,7 +202,7 @@ class RAGService:
     #  Multi-document ask                                                  
 
     @staticmethod
-    def ask_multi(question, document_ids, conversation_id=None, top_k_per_doc=10, top_k_final=5):
+    def ask_multi(question, document_ids, conversation_id=None, top_k_per_doc=10, top_k_final=5, owner=None):
         """
         Ask a question across multiple documents.
         Retrieves from each document independently, merges and reranks.
@@ -216,6 +216,8 @@ class RAGService:
 
         # Associate documents with this conversation
         docs = Document.objects.filter(id__in=document_ids)
+        if owner is not None:
+            docs = docs.filter(owner=owner)
         conversation.documents.set(docs)
 
         Message.objects.create(
@@ -227,7 +229,9 @@ class RAGService:
         # Retrieve from each document
         all_chunks = []
         for doc_id in document_ids:
-            chunks = Retriever.retrieve(question, document_id=doc_id, top_k=top_k_per_doc)
+            chunks = Retriever.retrieve(
+                question, document_id=doc_id, top_k=top_k_per_doc, owner=owner
+            )
             all_chunks.extend(list(chunks))
 
         if not all_chunks:

@@ -260,20 +260,21 @@ Ensure the requirements file includes the packages used by your actual implement
 Create a `.env` file in the backend directory:
 
 ```env
-SECRET_KEY=replace_with_a_secure_django_secret
-DEBUG=True
+DJANGO_SECRET_KEY=replace_with_a_secure_django_secret
+DJANGO_DEBUG=true
+DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,backend
 
-DB_NAME=ai_assistant
-DB_USER=postgres
-DB_PASSWORD=your_database_password
-DB_HOST=localhost
-DB_PORT=5432
+POSTGRES_DB=ai_assistant
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=your_database_password
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
 
 GEMINI_API_KEY=your_gemini_api_key
-GEMINI_MODEL=your_configured_gemini_flash_model
+GEMINI_MODEL=gemini-3.8-flash
 ```
 
-These names are an example configuration. Ensure they match the names read by your Django settings and LLM service. Never commit real credentials to GitHub.
+Never commit real credentials to GitHub.
 
 ### 5. Configure PostgreSQL and pgvector
 
@@ -294,7 +295,6 @@ The PostgreSQL user configured in Django must have the required permissions.
 ### 6. Apply migrations
 
 ```bash
-python manage.py makemigrations
 python manage.py migrate
 ```
 
@@ -304,7 +304,13 @@ python manage.py migrate
 python manage.py createsuperuser
 ```
 
-This is optional unless you intend to use Django's admin interface.
+Use this account to sign in. Create additional accounts through Django admin at `/admin/`; public registration is disabled.
+
+The API uses session authentication and CSRF protection. Document list, detail, edit, delete, retrieval, multi-document, and agent operations only accept the signed-in user's documents. Uploads take their owner from the session. Uploaded files can only be downloaded through the authenticated document download endpoint.
+
+With `DJANGO_DEBUG=false`, Django marks session and CSRF cookies `Secure`; serve the app over HTTPS in production. For local development over HTTP, enable `DJANGO_DEBUG=true` in the backend environment.
+
+Existing documents retain their current owner assignment. Review and reassign legacy documents in Django admin if they belong to a different user.
 
 ### 8. Run the development server
 
@@ -423,7 +429,7 @@ These scores belong to an individual test. They should not be interpreted as the
 - Repeated generation can produce different wording and scores.
 - Retrieval thresholds require further calibration.
 - The project needs additional tests for unsupported questions, ambiguous questions, incomplete context, and conflicting passages.
-- Production deployment, authentication, and operational monitoring require further work if not already implemented.
+- Production deployment and operational monitoring still require setup for the target environment.
 
 ## Roadmap
 
