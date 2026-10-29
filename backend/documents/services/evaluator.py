@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from documents.services.rag import RAGService
 from documents.services.llm import client
 from google.genai import types
+from django.conf import settings
 
 class AnswerEvaluation(BaseModel):
     correctness: float
@@ -104,7 +105,7 @@ class EvaluationService:
     """
 
             response = client.models.generate_content(
-                model="gemini-3.6-flash",
+                model=settings.GEMINI_MODEL,
                 contents=prompt,
                 config=types.GenerateContentConfig(
                     response_mime_type="application/json",

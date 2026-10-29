@@ -38,7 +38,7 @@ def generate_answer(question, context):
     prompt = build_prompt(question, context)
     try:
         response = client.models.generate_content(
-            model="gemini-2.0-flash",
+            model=settings.GEMINI_MODEL,
             contents=prompt
         )
         return response.text
@@ -60,7 +60,7 @@ def generate_answer_stream(question, context):
     prompt = build_prompt(question, context)
     try:
         for chunk in client.models.generate_content_stream(
-            model="gemini-2.0-flash",
+            model=settings.GEMINI_MODEL,
             contents=prompt
         ):
             if chunk.text:

@@ -22,3 +22,10 @@ def create_embedding(text: str) -> list[float]:
     # Generates a 384-dimensional vector completely free
     embedding_numpy = model.encode(text)
     return embedding_numpy.tolist()
+
+
+def create_embeddings(texts: list[str]) -> list[list[float]]:
+    """Encode a batch of texts in one model call."""
+    if not texts:
+        return []
+    return model.encode(texts, batch_size=32).tolist()

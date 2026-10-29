@@ -141,6 +141,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
 
 CORS_ALLOWED_ORIGINS = [
     origin.strip() for origin in os.getenv(

@@ -30,7 +30,7 @@ Enterprise AI Assistant addresses this problem by retrieving relevant passages f
 
 Instead of relying only on the language model's existing knowledge, the system uses document-specific context to ground its responses and preserve source information.
 
-The initial development and testing dataset uses *The Silent Patient* by Alex Michaelides as a sample document.
+The repository includes the application code and evaluation scaffolding. A redistribution-safe sample document and committed reproducible benchmark dataset are still needed.
 
 ### Key objectives
 
@@ -362,9 +362,7 @@ Here, \(rank_i\) is the rank of the first relevant result for question \(i\). A 
 
 The evaluation service compares MRR before and after cross-encoder reranking. It also measures the proportion of questions with at least one relevant chunk in the reranked top K.
 
-During development, reranking improved the measured MRR from approximately `0.1874` to `0.6731` on the then-current evaluation dataset.
-
-These are preliminary development results, not a final benchmark. The dataset was small, and its composition and relevant chunk labels should be verified before publishing these numbers as formal performance claims.
+The previously reported values were `0.1874` before reranking and `0.6731` after reranking, a ratio of approximately `3.59×`. The comparison used a baseline pool of 20 chunks and a reranked pool of 5, so it does not compare the same K. The local database had the real questions; the committed dataset contains only three placeholder cases and cannot reproduce these results. Treat these values as preliminary rather than a reproducible benchmark.
 
 ### Answer-quality evaluation
 
@@ -469,9 +467,8 @@ Contributions and suggestions are welcome. Potential areas include improving ret
 3. Implement and test your changes.
 4. Submit a pull request describing the change.
 
-## The reranker improved MRR by about 3.22×.
-MRR before vs after reranking
-Cross-encoder reranking substantially improves the position of relevant chunks in the top-5 results.
+## Previous retrieval comparison
+The reranker increased the reported MRR from `0.1874` to `0.6731` (approximately `3.59×`), using different cutoffs (retrieval top 20 and reranked top 5).
 <img width="960" height="540" alt="MRR before vs after reranking (1)" src="https://github.com/user-attachments/assets/d32b8b6f-a455-4b4b-b380-7829c22145b3" />
 
 

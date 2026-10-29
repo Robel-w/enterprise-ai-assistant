@@ -157,7 +157,7 @@ class AgentService:
 
         for step in range(MAX_STEPS):
             response = client.models.generate_content(
-                model="gemini-2.0-flash",
+                model=settings.GEMINI_MODEL,
                 contents=gemini_messages,
                 config=types.GenerateContentConfig(tools=TOOLS)
             )

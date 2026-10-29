@@ -91,8 +91,6 @@ class RAGService:
 
         # Retrieve & rerank
         retrieved = Retriever.retrieve(question, document_id=document_id, top_k=20)
-        reranked = Reranker.rerank(question, retrieved, top_k=top_k)
-
         if not retrieved:
             answer = "I could not find relevant information in the document."
             Message.objects.create(
@@ -106,6 +104,8 @@ class RAGService:
                 "sources": [],
                 "citations": [],
             }
+
+        reranked = Reranker.rerank(question, retrieved, top_k=top_k)
 
         # Build context with page labels
         history = _build_history_context(conversation)
@@ -160,8 +160,6 @@ class RAGService:
 
         # Retrieve & rerank
         retrieved = Retriever.retrieve(question, document_id=document_id, top_k=20)
-        reranked = Reranker.rerank(question, retrieved, top_k=top_k)
-
         if not retrieved:
             fallback = "I could not find relevant information in the document."
             Message.objects.create(
@@ -172,6 +170,8 @@ class RAGService:
             yield f"data: {json.dumps({'token': fallback, 'conversation_id': conversation.id})}\n\n"
             yield f"data: {json.dumps({'done': True, 'citations': [], 'sources': [], 'conversation_id': conversation.id})}\n\n"
             return
+
+        reranked = Reranker.rerank(question, retrieved, top_k=top_k)
 
         history = _build_history_context(conversation)
         doc_context, sources = _build_context(reranked)
