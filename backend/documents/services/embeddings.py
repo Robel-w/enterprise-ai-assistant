@@ -14,13 +14,17 @@
 
 
 from sentence_transformers import SentenceTransformer
+from functools import lru_cache
 
-# This downloads a lightweight, highly efficient embedding model locally
-model = SentenceTransformer("all-MiniLM-L6-v2")
+
+@lru_cache(maxsize=1)
+def _get_model():
+    # Delay model loading until the first embedding request.
+    return SentenceTransformer("all-MiniLM-L6-v2")
 
 def create_embedding(text: str) -> list[float]:
     # Generates a 384-dimensional vector completely free
-    embedding_numpy = model.encode(text)
+    embedding_numpy = _get_model().encode(text)
     return embedding_numpy.tolist()
 
 
@@ -28,4 +32,4 @@ def create_embeddings(texts: list[str]) -> list[list[float]]:
     """Encode a batch of texts in one model call."""
     if not texts:
         return []
-    return model.encode(texts, batch_size=32).tolist()
+    return _get_model().encode(texts, batch_size=32).tolist()

@@ -1,20 +1,20 @@
 [
-    {
-        "id": 1,
-        "question": "Who is Alicia Berenson?",
-        "expected_answer": "Alicia Berenson is the central character of the novel.",
-        "expected_pages": [1]
-    },
-    {
-        "id": 2,
-        "question": "Where does Alicia live?",
-        "expected_answer": "...",
-        "expected_pages": [2]
-    },
-    {
-        "id": 3,
-        "question": "What happened to Alicia's husband?",
-        "expected_answer": "...",
-        "expected_pages": [3]
-    }
+  {
+    "id": "aurora-energy-storage",
+    "question": "What type of batteries store power from the Kestrel solar array?",
+    "expected_answer": "Sodium-ion batteries store the solar array's power.",
+    "evidence_snippet": "The Kestrel solar array stores its power in sodium-ion batteries."
+  },
+  {
+    "id": "aurora-winter-inspection",
+    "question": "When should the Kestrel array be inspected in winter?",
+    "expected_answer": "Inspect the array on the first clear day after a snowstorm.",
+    "evidence_snippet": "inspect the array on the first clear day after a snowstorm"
+  },
+  {
+    "id": "aurora-sensor-replacement",
+    "question": "What should the crew do if the north sensor reports a temperature below minus twenty degrees?",
+    "expected_answer": "Replace the north sensor and record the old sensor's serial number.",
+    "evidence_snippet": "replace the north sensor and record its serial number"
+  }
 ]

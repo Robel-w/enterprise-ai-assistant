@@ -3,9 +3,13 @@ from sentence_transformers import CrossEncoder
 
 class Reranker:
 
-    model = CrossEncoder(
-        "cross-encoder/ms-marco-MiniLM-L-6-v2"
-    )
+    model = None
+
+    @classmethod
+    def _get_model(cls):
+        if cls.model is None:
+            cls.model = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")
+        return cls.model
 
     @staticmethod
     def rerank(query, results, top_k=5):
@@ -14,7 +18,7 @@ class Reranker:
             for result in results
         ]
 
-        scores = Reranker.model.predict(pairs)
+        scores = Reranker._get_model().predict(pairs)
 
         ranked_results = sorted(
             zip(results, scores),

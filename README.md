@@ -30,7 +30,7 @@ Enterprise AI Assistant addresses this problem by retrieving relevant passages f
 
 Instead of relying only on the language model's existing knowledge, the system uses document-specific context to ground its responses and preserve source information.
 
-The repository includes the application code and evaluation scaffolding. A redistribution-safe sample document and committed reproducible benchmark dataset are still needed.
+The repository includes the application code, a self-written demo PDF, and a committed retrieval dataset with evidence snippets.
 
 ### Key objectives
 
@@ -340,7 +340,7 @@ A key part of this project is measuring system quality instead of relying only o
 
 ### Retrieval evaluation
 
-Evaluation questions include a reference answer and IDs of relevant document chunks.
+The committed retrieval dataset includes questions, reference answers, and short evidence snippets from the self-written demo document. The database model retains its legacy chunk ID field for compatibility, but the retrieval benchmark no longer uses chunk IDs as labels.
 
 The retriever is evaluated at different values of K.
 
@@ -360,9 +360,16 @@ Here, \(rank_i\) is the rank of the first relevant result for question \(i\). A 
 
 ### Reranking evaluation
 
-The evaluation service compares MRR before and after cross-encoder reranking. It also measures the proportion of questions with at least one relevant chunk in the reranked top K.
+The committed dataset labels relevant chunks with short evidence snippets rather than database chunk IDs. Run it against the included self-written demo PDF after uploading that PDF and substituting the returned document ID:
 
-The previously reported values were `0.1874` before reranking and `0.6731` after reranking, a ratio of approximately `3.59×`. The comparison used a baseline pool of 20 chunks and a reranked pool of 5, so it does not compare the same K. The local database had the real questions; the committed dataset contains only three placeholder cases and cannot reproduce these results. Treat these values as preliminary rather than a reproducible benchmark.
+```powershell
+cd backend
+python manage.py evaluate_retrieval --document-id <document-id> --k 5 --retrieval-pool 20
+```
+
+The baseline and reranked MRR use the same `k`; `retrieval-pool` controls the number of candidates available to the reranker.
+
+The previously reported values were `0.1874` before reranking and `0.6731` after reranking, a ratio of approximately `3.59×`. That comparison used a baseline pool of 20 chunks and a reranked pool of 5, so it used different cutoffs. The original local questions were unavailable in the committed database, so those values are preliminary and cannot be reproduced from the original question set.
 
 ### Answer-quality evaluation
 
@@ -466,11 +473,6 @@ Contributions and suggestions are welcome. Potential areas include improving ret
 2. Create a feature branch.
 3. Implement and test your changes.
 4. Submit a pull request describing the change.
-
-## Previous retrieval comparison
-The reranker increased the reported MRR from `0.1874` to `0.6731` (approximately `3.59×`), using different cutoffs (retrieval top 20 and reranked top 5).
-<img width="960" height="540" alt="MRR before vs after reranking (1)" src="https://github.com/user-attachments/assets/d32b8b6f-a455-4b4b-b380-7829c22145b3" />
-
 
 ## License
 

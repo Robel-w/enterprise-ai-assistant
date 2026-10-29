@@ -86,6 +86,7 @@ class EvaluationQuestion(models.Model):
     ground_truth = models.TextField()
 
     relevant_chunk_ids = models.JSONField(default=list)
+    evidence_snippet = models.TextField(blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -95,6 +96,13 @@ class EvaluationQuestion(models.Model):
 
 
 class AnswerEvaluationResult(models.Model):
+    document = models.ForeignKey(
+        Document,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="answer_evaluation_results",
+    )
     evaluation_question = models.ForeignKey(
         EvaluationQuestion,
         on_delete=models.CASCADE
